@@ -12,30 +12,41 @@
  */
 
 const ALLOWED_TYPES = [
-  'feat', 'fix', 'docs', 'style', 'refactor',
-  'test', 'chore', 'perf', 'ci', 'build', 'revert',
-];
+  'feat',
+  'fix',
+  'docs',
+  'style',
+  'refactor',
+  'test',
+  'chore',
+  'perf',
+  'ci',
+  'build',
+  'revert',
+]
 
-let raw = '';
-process.stdin.setEncoding('utf8');
-process.stdin.on('data', (chunk) => { raw += chunk; });
+let raw = ''
+process.stdin.setEncoding('utf8')
+process.stdin.on('data', (chunk) => {
+  raw += chunk
+})
 process.stdin.on('end', () => {
-  let hookInput = {};
+  let hookInput = {}
   try {
-    hookInput = JSON.parse(raw);
+    hookInput = JSON.parse(raw)
   } catch {
-    process.exit(0);
+    process.exit(0)
   }
 
-  const command = hookInput?.tool_input?.command ?? '';
-  const message = extractCommitMessage(command);
+  const command = hookInput?.tool_input?.command ?? ''
+  const message = extractCommitMessage(command)
 
   if (!message) {
     // -m 없이 편집기로 작성하는 경우 → 통과 (git이 직접 검증)
-    process.exit(0);
+    process.exit(0)
   }
 
-  const result = validateMessage(message);
+  const result = validateMessage(message)
   if (!result.valid) {
     const output = {
       continue: false,
@@ -51,64 +62,64 @@ process.stdin.on('end', () => {
         '',
         `허용 type: ${ALLOWED_TYPES.join(', ')}`,
       ].join('\n'),
-    };
-    process.stdout.write(JSON.stringify(output));
+    }
+    process.stdout.write(JSON.stringify(output))
   }
 
-  process.exit(0);
-});
+  process.exit(0)
+})
 
 function extractCommitMessage(command) {
+  // heredoc: $(cat <<'EOF' ... EOF) — -m보다 먼저 검사해야 함
+  const heredoc = command.match(/\$\(cat\s+<<['"]?EOF['"]?\s*([\s\S]*?)\s*EOF\s*\)/)
+  if (heredoc) return heredoc[1]
+
   // -m "..." 또는 -m '...'
-  const mFlag = command.match(/-m\s+["']([\s\S]*?)["'](?:\s|$)/);
-  if (mFlag) return mFlag[1];
+  const mFlag = command.match(/-m\s+["']([\s\S]*?)["'](?:\s|$)/)
+  if (mFlag) return mFlag[1]
 
-  // heredoc: $(cat <<'EOF' ... EOF)
-  const heredoc = command.match(/\$\(cat\s+<<['"]?EOF['"]?\s*([\s\S]*?)\s*EOF\s*\)/);
-  if (heredoc) return heredoc[1];
-
-  return null;
+  return null
 }
 
 function validateMessage(message) {
-  const lines = message.replace(/\r\n/g, '\n').split('\n');
-  const errors = [];
+  const lines = message.replace(/\r\n/g, '\n').split('\n')
+  const errors = []
 
   // 1. 첫 줄: <type>: <한글 제목>
-  const title = lines[0] ?? '';
-  const typeMatch = title.match(/^([a-z]+):\s*(.+)$/);
+  const title = lines[0] ?? ''
+  const typeMatch = title.match(/^([a-z]+):\s*(.+)$/)
 
   if (!typeMatch) {
-    errors.push(`✗ 첫 줄 형식이 잘못되었습니다. "<type>: <한글 제목>" 형식이어야 합니다.`);
-    errors.push(`  현재: "${title}"`);
+    errors.push(`✗ 첫 줄 형식이 잘못되었습니다. "<type>: <한글 제목>" 형식이어야 합니다.`)
+    errors.push(`  현재: "${title}"`)
   } else {
-    const [, type, subject] = typeMatch;
+    const [, type, subject] = typeMatch
 
     if (!ALLOWED_TYPES.includes(type)) {
-      errors.push(`✗ 허용되지 않는 type: "${type}"`);
-      errors.push(`  허용 목록: ${ALLOWED_TYPES.join(', ')}`);
+      errors.push(`✗ 허용되지 않는 type: "${type}"`)
+      errors.push(`  허용 목록: ${ALLOWED_TYPES.join(', ')}`)
     }
 
     if (!/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]/.test(subject)) {
-      errors.push(`✗ 제목에 한글이 없습니다. 제목은 한글로 작성해야 합니다.`);
-      errors.push(`  현재: "${subject}"`);
+      errors.push(`✗ 제목에 한글이 없습니다. 제목은 한글로 작성해야 합니다.`)
+      errors.push(`  현재: "${subject}"`)
     }
   }
 
   // 2. 본문이 있을 경우: 두 번째 줄은 빈 줄
   if (lines.length > 1 && lines[1].trim() !== '') {
-    errors.push(`✗ 제목 다음 줄은 빈 줄이어야 합니다.`);
+    errors.push(`✗ 제목 다음 줄은 빈 줄이어야 합니다.`)
   }
 
   // 3. 본문이 있을 경우: "- " 로 시작
   if (lines.length > 2) {
-    const bodyLines = lines.slice(2).filter((l) => l.trim() !== '');
-    const badLines = bodyLines.filter((l) => !l.startsWith('- '));
+    const bodyLines = lines.slice(2).filter((l) => l.trim() !== '')
+    const badLines = bodyLines.filter((l) => !l.startsWith('- '))
     if (badLines.length > 0) {
-      errors.push(`✗ 본문 항목은 "- " 로 시작해야 합니다.`);
-      badLines.forEach((l) => errors.push(`  현재: "${l}"`));
+      errors.push(`✗ 본문 항목은 "- " 로 시작해야 합니다.`)
+      badLines.forEach((l) => errors.push(`  현재: "${l}"`))
     }
   }
 
-  return { valid: errors.length === 0, errors };
+  return { valid: errors.length === 0, errors }
 }
