@@ -1,13 +1,16 @@
-// Design Ref: §2.2 — 트랜스크립트 파이프라인: 수신 → mask() → 파이프라인 큐
+// Design Ref: §2.2 — 트랜스크립트 파이프라인: 수신 → mask() → parse() → classify() → 로그
 // Plan SC: FR-03 — POST /ingest/transcript. 수신 즉시 마스킹 후 202 반환
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 
+import { classify } from '../parser/classifier'
 import { maskObject } from '../parser/masker'
+import { computeTopFiles, parseTranscript } from '../parser/transcript'
 
 const transcriptLineSchema = z.object({
   uuid: z.string(),
   parentUuid: z.string().nullable(),
+  isSidechain: z.boolean().default(false),
   type: z.string(), // user | assistant | attachment | summary | permission-mode
   message: z.record(z.unknown()),
   timestamp: z.string(),
@@ -61,15 +64,31 @@ function applyMasking(payload: IngestPayload): IngestPayload {
 }
 
 function enqueueProcessing(fastify: FastifyInstance, payload: IngestPayload): void {
-  // Phase 3에서 실제 파이프라인으로 교체:
-  // parse() → classify() → analyze() → summarize() → db.save()
-  fastify.log.info(
-    {
-      sessionId: payload.sessionId,
-      projectPath: payload.projectPath,
-      lineCount: payload.lines.length,
-      agentVersion: payload.agentVersion,
-    },
-    'Transcript queued for processing (parser 미구현 — Phase 3)',
-  )
+  try {
+    // parse() — JSONL → ParsedSession
+    const session = parseTranscript(payload.sessionId, payload.projectPath, payload.lines)
+
+    // classify() — 의미적 작업 분류
+    const { taskType, taskDescription } = classify(session)
+
+    // topFiles 추출
+    const topFiles = computeTopFiles(session, 10)
+
+    fastify.log.info(
+      {
+        sessionId: payload.sessionId,
+        taskType,
+        taskDescription,
+        messageCount: session.messages.length,
+        toolCallCount: session.toolCalls.length,
+        topFiles: topFiles.slice(0, 3),
+      },
+      'Transcript parsed and classified (Phase 4에서 DB 저장 + 검출기 추가 예정)',
+    )
+  } catch (err) {
+    fastify.log.error(
+      { sessionId: payload.sessionId, err },
+      'Transcript processing failed — session skipped',
+    )
+  }
 }

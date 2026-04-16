@@ -1,11 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "paths": {
-      "@refinery/shared": ["../../packages/shared/src/types.ts"]
-    }
+    "outDir": "dist"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

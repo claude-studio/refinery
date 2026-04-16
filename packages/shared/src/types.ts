@@ -65,7 +65,8 @@ export interface SessionSummary {
 export interface TranscriptLine {
   uuid: string
   parentUuid: string | null
-  type: 'user' | 'assistant'
+  isSidechain: boolean
+  type: string // user | assistant | permission-mode | attachment | summary
   message: Record<string, unknown>
   timestamp: string
 }
