@@ -18,6 +18,9 @@ apps/frontend/.next/
 # TypeScript
 *.tsbuildinfo
 
+# ESLint
+.eslintcache
+
 # Prisma generated client
 apps/backend/prisma/generated/
 apps/backend/src/generated/
