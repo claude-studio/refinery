@@ -1,0 +1,26 @@
+{
+  "name": "@refinery/ui",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./components/*": "./components/*.tsx",
+    "./lib/utils": "./lib/utils.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "react": "^19.1.0",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}

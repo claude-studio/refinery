@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/*
+  Design Ref: §2 — Color Palette & Roles (DESIGN.md)
+  Tailwind v4 CSS 변수 기반 커스텀 토큰
+*/
+@theme {
+  /* ─── Primary Colors ─────────────────────────────────────────────────── */
+  --color-warm-parchment: #faf9f6;
+  --color-earth-gray: #353534;
+  --color-deep-void: #1a1917;
+
+  /* ─── Secondary & Accent ─────────────────────────────────────────────── */
+  --color-stone-gray: #868584;
+  --color-ash-gray: #afaeac;
+  --color-muted-purple: #666469;
+
+  /* ─── Surface & Border ───────────────────────────────────────────────── */
+  --color-frosted-veil: rgba(255, 255, 255, 0.04);
+  --color-mist-border: rgba(226, 226, 226, 0.35);
+  --color-translucent-parchment: rgba(250, 249, 246, 0.9);
+
+  /* ─── Typography ─────────────────────────────────────────────────────── */
+  --font-family-matter: 'Matter', 'Matter Regular Placeholder', system-ui, sans-serif;
+  --font-family-matter-mono: 'Matter Mono Regular', 'Courier New', monospace;
+  --font-family-geist-mono: 'Geist Mono', 'Courier New', monospace;
+
+  /* ─── Spacing (8px base) ─────────────────────────────────────────────── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* ─── Border Radius ──────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-pill: 50px;
+}
+
+html,
+body {
+  background-color: var(--color-deep-void);
+  color: var(--color-warm-parchment);
+  font-family: var(--font-family-matter);
+}

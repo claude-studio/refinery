@@ -1,0 +1,17 @@
+{
+  "name": "@refinery/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/types.ts",
+  "types": "./src/types.ts",
+  "exports": {
+    ".": "./src/types.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

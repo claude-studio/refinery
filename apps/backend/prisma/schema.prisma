@@ -1,0 +1,113 @@
+// Design Ref: §3.3 — Prisma 스키마 (Session, Message, ToolCall, Inefficiency, OtelSpan, WeeklyReport)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id              String    @id @default(cuid())
+  sessionId       String    @unique // Claude Code 세션 UUID
+  projectPath     String
+  startedAt       DateTime
+  endedAt         DateTime?
+  durationMin     Float?
+  taskType        String? // bug-fix | feature | refactor | exploration | config
+  taskDescription String?
+  totalToolCalls  Int       @default(0)
+  inefficiencyCount Int     @default(0)
+  topFiles        String[] // 상위 10개 파일
+  createdAt       DateTime  @default(now())
+
+  messages       Message[]
+  toolCalls      ToolCall[]
+  inefficiencies Inefficiency[]
+  summary        SessionSummary?
+
+  @@index([startedAt])
+  @@index([taskType])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  sessionId  String
+  uuid       String
+  parentUuid String?
+  role       String // user | assistant
+  content    String   @db.Text // 마스킹 적용 후
+  timestamp  DateTime
+  isSidechain Boolean @default(false)
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model ToolCall {
+  id         String   @id @default(cuid())
+  sessionId  String
+  toolUseId  String // tool_use_id (원본)
+  name       String // Read, Bash, Grep, Edit, Write, etc.
+  input      Json
+  resultText String?  @db.Text // 마스킹 적용 후
+  isError    Boolean  @default(false)
+  timestamp  DateTime
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([name])
+}
+
+model Inefficiency {
+  id          String   @id @default(cuid())
+  sessionId   String
+  type        String // repeat-read | failed-retry | bash-antipattern | context-waste
+  severity    String // high | medium | low
+  description String
+  evidence    String[]
+  count       Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([type])
+}
+
+model SessionSummary {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  raw       Json // SessionSummary 전체 JSON
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model OtelSpan {
+  id         String   @id @default(cuid())
+  sessionId  String? // 연결 가능하면 매핑, 아니면 null
+  spanType   String // metric | log
+  name       String
+  value      Float?
+  attributes Json
+  timestamp  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([spanType, timestamp])
+}
+
+model WeeklyReport {
+  id          String   @id @default(cuid())
+  weekStart   DateTime @unique // 해당 주 월요일 00:00 UTC
+  insights    Json // LLM 생성 인사이트 배열 (≥3개)
+  stats       Json // 세션 수, 총 비효율 건수, 타입별 분포
+  generatedAt DateTime @default(now())
+
+  @@index([weekStart])
+}
