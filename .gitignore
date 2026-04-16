@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Turborepo
+.turbo/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Next.js
+.next/
+apps/frontend/.next/
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma generated client
+apps/backend/prisma/generated/
+apps/backend/src/generated/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+# .env.example 은 커밋 대상 (보관)
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+logs/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+
+# bkit 내부 상태 (프로젝트별 자동 생성)
+.bkit/
+.bkit-memory.json
+
+# Agent daemon 로컬 큐
+apps/agent/.queue/
+apps/agent/queue.json
+
+# Cloudflare
+cloudflared
