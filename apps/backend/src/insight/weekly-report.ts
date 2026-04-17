@@ -1,8 +1,10 @@
-// Design Ref: §2.2 주간 리포트 — stats 집계 + 기본 인사이트 (LLM은 Phase 8에서 추가)
+// Design Ref: §2.2 주간 리포트 — stats 집계 + LLM 인사이트 (ANTHROPIC_API_KEY 있으면 LLM, 없으면 규칙 기반)
 // Plan FR-11: 주간 인사이트 생성 인사이트 ≥ 3개
 import type { WeeklyReportData } from '@refinery/shared'
 
 import { prisma } from '../db/client.js'
+
+import { generateLlmInsights, isLlmAvailable } from './llm.js'
 
 export function getMondayOf(date: Date): Date {
   const d = new Date(date)
@@ -41,7 +43,22 @@ export async function generateWeeklyReport(weekStart: Date): Promise<WeeklyRepor
     byType: byType as WeeklyReportData['stats']['byType'],
   }
 
-  const insights = buildInsights(sessions.length, totalInefficiencies, byType)
+  let insights: string[]
+  if (isLlmAvailable() && sessions.length > 0) {
+    insights = await generateLlmInsights({
+      weekStart: weekStart.toISOString(),
+      totalSessions: sessions.length,
+      totalInefficiencies,
+      byType,
+      sessionSamples: sessions.map((s) => ({
+        taskType: (s.taskType as string) ?? 'unknown',
+        inefficiencyCount: s.inefficiencyCount,
+        durationMin: s.durationMin ?? 0,
+      })),
+    })
+  } else {
+    insights = buildInsights(sessions.length, totalInefficiencies, byType)
+  }
 
   const report = await prisma.weeklyReport.upsert({
     where: { weekStart },
