@@ -41,6 +41,27 @@
   --radius-pill: 50px;
 }
 
+/* shadcn/ui CSS 변수 — DESIGN.md 토큰으로 매핑 */
+:root {
+  --background: #1a1917;
+  --foreground: #faf9f6;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-foreground: #faf9f6;
+  --primary: #353534;
+  --primary-foreground: #faf9f6;
+  --secondary: rgba(255, 255, 255, 0.04);
+  --secondary-foreground: #afaeac;
+  --muted: rgba(255, 255, 255, 0.04);
+  --muted-foreground: #868584;
+  --border: rgba(226, 226, 226, 0.35);
+  --ring: #353534;
+  --radius: 8px;
+  --popover: #1a1917;
+  --popover-foreground: #faf9f6;
+  --accent: rgba(255, 255, 255, 0.07);
+  --accent-foreground: #faf9f6;
+}
+
 html,
 body {
   background-color: var(--color-deep-void);

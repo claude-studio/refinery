@@ -4,7 +4,10 @@
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM"],
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "paths": {
+      "@refinery/ui/*": ["./*"]
+    }
   },
   "include": ["components", "lib"],
   "exclude": ["node_modules", "dist"]
