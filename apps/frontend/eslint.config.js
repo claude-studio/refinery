@@ -23,7 +23,6 @@ export default [
       },
     },
     rules: {
-      'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-custom-classname': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
     },

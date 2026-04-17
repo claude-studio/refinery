@@ -19,7 +19,7 @@ export function InefficiencyBadge({ type, severity, className }: Props) {
     <span
       className={cn(
         'inline-block border px-2 py-0.5 text-[10px] tracking-[1.4px]',
-        'border-[rgba(226,226,226,0.35)]',
+        'border-mist-border',
         severity === 'high' && 'text-warm-parchment',
         severity === 'medium' && 'text-ash-gray',
         severity === 'low' && 'text-stone-gray',

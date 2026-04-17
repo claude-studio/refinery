@@ -1,3 +1,4 @@
+import { cn } from '@refinery/ui/lib/utils'
 import { notFound } from 'next/navigation'
 
 import { InefficiencyBadge } from '@/components/inefficiency-badge'
@@ -65,7 +66,7 @@ export default async function SessionDetailPage({ params }: Props) {
         </h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-px border border-[rgba(226,226,226,0.35)] sm:grid-cols-4">
+      <div className="border-mist-border grid grid-cols-2 gap-px border sm:grid-cols-4">
         <MetaCell
           label="작업 유형"
           value={session.taskType ? (TASK_LABELS[session.taskType] ?? session.taskType) : '—'}
@@ -160,7 +161,12 @@ function MetaCell({
   return (
     <div className="bg-[rgba(255,255,255,0.04)] px-5 py-4">
       <p className="text-stone-gray text-[10px] tracking-[1.4px]">{label.toUpperCase()}</p>
-      <p className={`mt-1 text-lg ${highlight ? 'text-warm-parchment' : 'text-ash-gray'}`}>
+      <p
+        className={cn('mt-1 text-lg', {
+          'text-warm-parchment': highlight,
+          'text-ash-gray': !highlight,
+        })}
+      >
         {value}
       </p>
     </div>

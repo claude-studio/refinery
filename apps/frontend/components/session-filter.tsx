@@ -37,10 +37,10 @@ export function SessionFilter() {
         value={searchParams.get('taskType') ?? 'all'}
         onValueChange={(v) => updateParam('taskType', v)}
       >
-        <SelectTrigger className="text-ash-gray h-7 w-36 border-[rgba(226,226,226,0.35)] bg-transparent text-xs focus:ring-0">
+        <SelectTrigger className="border-mist-border text-ash-gray h-7 w-36 bg-transparent text-xs focus:ring-0">
           <SelectValue placeholder="작업 유형" />
         </SelectTrigger>
-        <SelectContent className="text-ash-gray border-[rgba(226,226,226,0.35)] bg-[#1a1917] text-xs">
+        <SelectContent className="border-mist-border bg-deep-void text-ash-gray text-xs">
           <SelectItem value="all">전체</SelectItem>
           <SelectItem value="bug-fix">Bug Fix</SelectItem>
           <SelectItem value="feature">Feature</SelectItem>
@@ -54,10 +54,10 @@ export function SessionFilter() {
         value={searchParams.get('hasInefficiency') ?? 'all'}
         onValueChange={(v) => updateParam('hasInefficiency', v)}
       >
-        <SelectTrigger className="text-ash-gray h-7 w-32 border-[rgba(226,226,226,0.35)] bg-transparent text-xs focus:ring-0">
+        <SelectTrigger className="text-ash-gray border-mist-border h-7 w-32 bg-transparent text-xs focus:ring-0">
           <SelectValue placeholder="비효율" />
         </SelectTrigger>
-        <SelectContent className="text-ash-gray border-[rgba(226,226,226,0.35)] bg-[#1a1917] text-xs">
+        <SelectContent className="text-ash-gray border-mist-border bg-deep-void text-xs">
           <SelectItem value="all">전체</SelectItem>
           <SelectItem value="true">비효율 있음</SelectItem>
           <SelectItem value="false">비효율 없음</SelectItem>

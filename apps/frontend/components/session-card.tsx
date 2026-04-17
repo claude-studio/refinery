@@ -34,7 +34,7 @@ export function SessionCard({ session }: Props) {
   return (
     <Link
       href={`/sessions/${session.id}`}
-      className="group block border border-[rgba(226,226,226,0.35)] bg-[rgba(255,255,255,0.04)] p-5 transition-colors hover:bg-[rgba(255,255,255,0.07)]"
+      className="group border-mist-border bg-frosted-veil block border p-5 transition-colors hover:bg-[rgba(255,255,255,0.07)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">

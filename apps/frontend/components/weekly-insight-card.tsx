@@ -23,7 +23,7 @@ export function WeeklyInsightCard({ report }: Props) {
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-px border border-[rgba(226,226,226,0.35)]">
+      <div className="border-mist-border grid grid-cols-3 gap-px border">
         <StatCell label="총 세션" value={stats.totalSessions} />
         <StatCell label="비효율 건수" value={stats.totalInefficiencies} />
         <StatCell
@@ -68,7 +68,7 @@ export function WeeklyInsightCard({ report }: Props) {
 
 function StatCell({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-[rgba(255,255,255,0.04)] px-5 py-4">
+    <div className="bg-frosted-veil px-5 py-4">
       <p className="text-stone-gray text-[10px] tracking-[1.4px]">{label.toUpperCase()}</p>
       <p className="text-warm-parchment mt-1 text-2xl">{value}</p>
     </div>

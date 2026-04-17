@@ -26,27 +26,27 @@ export function MetricChart({ totalTokens, avgLatencyMs }: Props) {
       <BarChart data={data} barSize={24}>
         <XAxis
           dataKey="name"
-          tick={{ fill: '#868584', fontSize: 10, letterSpacing: '1.4px' }}
+          tick={{ fill: 'var(--color-stone-gray)', fontSize: 10, letterSpacing: '1.4px' }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#868584', fontSize: 10 }}
+          tick={{ fill: 'var(--color-stone-gray)', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           width={48}
         />
         <Tooltip
           contentStyle={{
-            background: '#1a1917',
-            border: '1px solid rgba(226,226,226,0.35)',
+            background: 'var(--color-deep-void)',
+            border: '1px solid var(--color-mist-border)',
             borderRadius: 0,
             fontSize: 12,
-            color: '#afaeac',
+            color: 'var(--color-ash-gray)',
           }}
-          cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+          cursor={{ fill: 'var(--color-frosted-veil)' }}
         />
-        <Bar dataKey="value" fill="rgba(226,226,226,0.35)" radius={0} />
+        <Bar dataKey="value" fill="var(--color-mist-border)" radius={0} />
       </BarChart>
     </ResponsiveContainer>
   )

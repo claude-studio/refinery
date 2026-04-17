@@ -40,7 +40,7 @@ export default async function SessionsPage({ searchParams }: Props) {
       </Suspense>
 
       {sessions.length === 0 ? (
-        <div className="border border-[rgba(226,226,226,0.35)] px-8 py-12 text-center">
+        <div className="border-mist-border border px-8 py-12 text-center">
           <p className="text-stone-gray text-sm">세션이 없습니다.</p>
         </div>
       ) : (
@@ -84,7 +84,7 @@ function Pagination({
         {page > 1 && (
           <a
             href={qs(page - 1)}
-            className="text-ash-gray border border-[rgba(226,226,226,0.35)] px-3 py-1 text-xs hover:bg-[rgba(255,255,255,0.04)]"
+            className="border-mist-border text-ash-gray border px-3 py-1 text-xs hover:bg-[rgba(255,255,255,0.04)]"
           >
             이전
           </a>
@@ -92,7 +92,7 @@ function Pagination({
         {page < totalPages && (
           <a
             href={qs(page + 1)}
-            className="text-ash-gray border border-[rgba(226,226,226,0.35)] px-3 py-1 text-xs hover:bg-[rgba(255,255,255,0.04)]"
+            className="border-mist-border text-ash-gray border px-3 py-1 text-xs hover:bg-[rgba(255,255,255,0.04)]"
           >
             다음
           </a>

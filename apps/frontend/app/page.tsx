@@ -44,7 +44,7 @@ export default async function HomePage() {
 
 function EmptyWeekly() {
   return (
-    <div className="border border-[rgba(226,226,226,0.35)] px-8 py-12 text-center">
+    <div className="border-mist-border border px-8 py-12 text-center">
       <p className="text-stone-gray text-sm">아직 주간 리포트가 없습니다.</p>
       <p className="text-stone-gray mt-2 text-xs">
         에이전트를 실행하고 세션을 마치면 자동으로 생성됩니다.

@@ -23,7 +23,7 @@ export function NewSessionBanner() {
         setCount(0)
         router.refresh()
       }}
-      className="text-ash-gray w-full border border-[rgba(226,226,226,0.35)] bg-[rgba(255,255,255,0.04)] py-2.5 text-center text-xs transition-colors hover:bg-[rgba(255,255,255,0.07)]"
+      className="text-ash-gray border-mist-border bg-frosted-veil w-full border py-2.5 text-center text-xs transition-colors hover:bg-[rgba(255,255,255,0.07)]"
     >
       새 세션 {count}개 분석 완료 — 클릭하여 갱신
     </button>

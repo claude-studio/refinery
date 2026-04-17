@@ -1,4 +1,5 @@
 import type { SessionDetail } from '@refinery/shared'
+import { cn } from '@refinery/ui/lib/utils'
 
 type TimelineItem = SessionDetail['toolCallTimeline'][number]
 
@@ -56,14 +57,22 @@ export function ToolCallTimeline({ timeline }: Props) {
             className="flex items-start gap-4 border-b border-[rgba(226,226,226,0.12)] py-2.5 last:border-0"
           >
             <span
-              className={`w-7 shrink-0 text-center font-[family-name:var(--font-family-geist-mono)] text-[10px] ${item.isError ? 'text-stone-gray line-through' : 'text-ash-gray'}`}
+              className={cn('font-family-geist-mono w-7 shrink-0 text-center text-[10px]', {
+                'text-stone-gray line-through': item.isError,
+                'text-ash-gray': !item.isError,
+              })}
             >
               {abbr}
             </span>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
-                <span className={`text-xs ${item.isError ? 'text-stone-gray' : 'text-ash-gray'}`}>
+                <span
+                  className={cn('text-xs', {
+                    'text-stone-gray': item.isError,
+                    'text-ash-gray': !item.isError,
+                  })}
+                >
                   {item.name}
                 </span>
                 {item.isError && (
@@ -77,7 +86,7 @@ export function ToolCallTimeline({ timeline }: Props) {
               )}
             </div>
 
-            <span className="text-stone-gray shrink-0 font-[family-name:var(--font-family-geist-mono)] text-[10px]">
+            <span className="text-stone-gray font-family-geist-mono shrink-0 text-[10px]">
               {formatTime(item.timestamp)}
             </span>
           </div>
