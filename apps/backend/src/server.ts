@@ -5,6 +5,9 @@ import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import Fastify from 'fastify'
 
+import { eventsRoute } from './api/events'
+import { insightsRoute } from './api/insights'
+import { sessionsRoute } from './api/sessions'
 import { otlpRoute } from './ingest/otlp'
 import { transcriptRoute } from './ingest/transcript'
 import { authHook } from './plugins/auth'
@@ -48,10 +51,14 @@ server.register(async (protectedApp) => {
   // 트랜스크립트 수신 — 에이전트에서 전송하는 JSONL 데이터
   protectedApp.register(transcriptRoute, { prefix: '/ingest' })
 
-  // Phase 5에서 추가:
-  // protectedApp.register(sessionsRoute, { prefix: '/sessions' })
-  // protectedApp.register(insightsRoute, { prefix: '/insights' })
-  // protectedApp.register(eventsRoute)
+  // REST API — 세션 목록/상세
+  protectedApp.register(sessionsRoute, { prefix: '/sessions' })
+
+  // REST API — 주간 인사이트 리포트
+  protectedApp.register(insightsRoute, { prefix: '/insights' })
+
+  // SSE — 신규 세션 분석 완료 이벤트 스트림
+  protectedApp.register(eventsRoute)
 })
 
 // ─── 서버 시작 ────────────────────────────────────────────────────────────────

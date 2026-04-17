@@ -1,11 +1,17 @@
-// Design Ref: §2.2 — 트랜스크립트 파이프라인: 수신 → mask() → parse() → classify() → 로그
-// Plan SC: FR-03 — POST /ingest/transcript. 수신 즉시 마스킹 후 202 반환
+// Design Ref: §2.2 — 트랜스크립트 파이프라인: 수신 → mask() → parse() → classify() → analyze() → summarize() → db.save()
+// Plan SC: FR-03 — POST /ingest/transcript. 수신 즉시 마스킹 후 202 반환. 비동기 파이프라인 실행
+import type { Prisma } from '@prisma/client'
+import type { Inefficiency, ParsedSession, SessionSummary } from '@refinery/shared'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 
-import { classify } from '../parser/classifier'
-import { maskObject } from '../parser/masker'
-import { computeTopFiles, parseTranscript } from '../parser/transcript'
+import { analyze } from '../analyzer/index.js'
+import { prisma } from '../db/client.js'
+import { summarize } from '../insight/session-summary.js'
+import { eventBus } from '../lib/event-bus.js'
+import { classify } from '../parser/classifier.js'
+import { maskObject } from '../parser/masker.js'
+import { computeTopFiles, parseTranscript } from '../parser/transcript.js'
 
 const transcriptLineSchema = z.object({
   uuid: z.string(),
@@ -46,9 +52,9 @@ export async function transcriptRoute(fastify: FastifyInstance) {
     // 202 먼저 반환 → 에이전트 블로킹 방지
     reply.status(202).send({ data: { queued: true, sessionId: maskedPayload.sessionId } })
 
-    // 비동기 파이프라인 — Phase 3에서 parse/classify/analyze/summarize 구현
+    // 비동기 파이프라인
     setImmediate(() => {
-      enqueueProcessing(fastify, maskedPayload)
+      void runPipeline(fastify, maskedPayload)
     })
   })
 }
@@ -63,27 +69,29 @@ function applyMasking(payload: IngestPayload): IngestPayload {
   }
 }
 
-function enqueueProcessing(fastify: FastifyInstance, payload: IngestPayload): void {
+async function runPipeline(fastify: FastifyInstance, payload: IngestPayload): Promise<void> {
   try {
-    // parse() — JSONL → ParsedSession
     const session = parseTranscript(payload.sessionId, payload.projectPath, payload.lines)
+    const classification = classify(session)
+    const inefficiencies = analyze(session)
+    const summary = summarize(session, classification, inefficiencies)
 
-    // classify() — 의미적 작업 분류
-    const { taskType, taskDescription } = classify(session)
+    await saveSession(session, inefficiencies, summary)
 
-    // topFiles 추출
-    const topFiles = computeTopFiles(session, 10)
+    eventBus.emitSessionAnalyzed({
+      sessionId: session.sessionId,
+      inefficiencyCount: inefficiencies.length,
+      taskType: summary.taskType,
+    })
 
     fastify.log.info(
       {
         sessionId: payload.sessionId,
-        taskType,
-        taskDescription,
-        messageCount: session.messages.length,
-        toolCallCount: session.toolCalls.length,
-        topFiles: topFiles.slice(0, 3),
+        taskType: classification.taskType,
+        inefficiencyCount: inefficiencies.length,
+        totalToolCalls: session.toolCalls.length,
       },
-      'Transcript parsed and classified (Phase 4에서 DB 저장 + 검출기 추가 예정)',
+      'Transcript processed and saved',
     )
   } catch (err) {
     fastify.log.error(
@@ -91,4 +99,79 @@ function enqueueProcessing(fastify: FastifyInstance, payload: IngestPayload): vo
       'Transcript processing failed — session skipped',
     )
   }
+}
+
+async function saveSession(
+  session: ParsedSession,
+  inefficiencies: Inefficiency[],
+  summary: SessionSummary,
+): Promise<void> {
+  const existing = await prisma.session.findUnique({
+    where: { sessionId: session.sessionId },
+  })
+
+  if (existing) {
+    await prisma.session.update({
+      where: { sessionId: session.sessionId },
+      data: {
+        endedAt: session.endedAt,
+        durationMin: summary.durationMin,
+        taskType: summary.taskType,
+        taskDescription: summary.taskDescription,
+        totalToolCalls: session.toolCalls.length,
+        inefficiencyCount: inefficiencies.length,
+        topFiles: summary.topFiles,
+      },
+    })
+    return
+  }
+
+  await prisma.session.create({
+    data: {
+      sessionId: session.sessionId,
+      projectPath: session.projectPath,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      durationMin: summary.durationMin,
+      taskType: summary.taskType,
+      taskDescription: summary.taskDescription,
+      totalToolCalls: session.toolCalls.length,
+      inefficiencyCount: inefficiencies.length,
+      topFiles: computeTopFiles(session, 10),
+      messages: {
+        create: session.messages.map((m) => ({
+          uuid: m.uuid,
+          parentUuid: m.parentUuid,
+          role: m.role,
+          content: m.content,
+          timestamp: m.timestamp,
+          isSidechain: m.isSidechain,
+        })),
+      },
+      toolCalls: {
+        create: session.toolCalls.map((tc) => ({
+          toolUseId: tc.id,
+          name: tc.name,
+          input: tc.input as Prisma.InputJsonValue,
+          resultText: tc.resultText || null,
+          isError: tc.isError,
+          timestamp: tc.timestamp,
+        })),
+      },
+      inefficiencies: {
+        create: inefficiencies.map((i) => ({
+          type: i.type,
+          severity: i.severity,
+          description: i.description,
+          evidence: i.evidence,
+          count: i.count,
+        })),
+      },
+      summary: {
+        create: {
+          raw: summary as unknown as Prisma.InputJsonValue,
+        },
+      },
+    },
+  })
 }
